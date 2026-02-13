@@ -13,20 +13,18 @@ return new class extends Migration
     {
         Schema::create('prefeituras', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('empresa_id')->constrained('empresas')->onDelete('cascade');
             $table->string('nome');
-            $table->string('cnpj', 18)->unique();
-            $table->string('endereco');
-            $table->string('cidade');
-            $table->string('telefone', 20);
-            $table->string('email');
-            $table->string('autoridade_competente');
-            $table->string('cor_relatorio', 7)->default('#000000');
-            $table->string('timbre')->nullable();
-
+            $table->string('cnpj', 18);
+            $table->string('endereco')->nullable();
             $table->timestamps();
+            $table->softDeletes();
         });
     }
 
+    /**
+     * Reverse the migrations.
+     */
     public function down(): void
     {
         Schema::dropIfExists('prefeituras');
