@@ -17,6 +17,9 @@ class Contrato extends Model
         return $this->belongsTo(Prefeitura::class);
     }
 
+    // REMOVIDO: public function empresa() { return $this->hasMany(Empresa::class); }
+    // Motivo: A empresa é acessada através da prefeitura ($this->prefeitura->empresa)
+
     public function lotes()
     {
         return $this->hasMany(Lote::class);

@@ -14,7 +14,6 @@ return new class extends Migration
         Schema::create('itens', function (Blueprint $table) {
             $table->id();
             $table->foreignId('lote_id')->constrained('lotes')->onDelete('cascade');
-            $table->integer('numero_item')->nullable();
             $table->text('descricao');
             $table->string('unidade', 10); 
             $table->decimal('quantidade', 15, 4); 

@@ -12,12 +12,10 @@ use App\Imports\ItensImport;
 
 class ItemController extends Controller
 {
-
     public function store(Request $request)
     {
         $validated = $request->validate([
             'lote_id'        => 'required|exists:lotes,id',
-            'numero_item'    => 'nullable|integer',
             'descricao'      => 'required|string',
             'unidade'        => 'required|string|max:10',
             'quantidade'     => 'required|numeric|min:0',
@@ -39,11 +37,35 @@ class ItemController extends Controller
             ->with('success', 'Item adicionado com sucesso.');
     }
 
+    public function update(Request $request, $id)
+    {
+        $validated = $request->validate([
+            'descricao'      => 'required|string',
+            'unidade'        => 'required|string|max:10',
+            'quantidade'     => 'required|numeric|min:0',
+            'valor_unitario' => 'required|numeric|min:0',
+        ]);
+
+        $item = Item::where('id', $id)
+            ->whereHas('lote.contrato.prefeitura', function($q) {
+                $q->where('empresa_id', Auth::user()->empresa_id);
+            })
+            ->firstOrFail();
+
+        $validated['valor_total'] = $validated['quantidade'] * $validated['valor_unitario'];
+
+        $item->update($validated);
+
+        return redirect()
+            ->back()
+            ->with('success', 'Item atualizado com sucesso.');
+    }
+
     public function import(Request $request)
     {
         $request->validate([
             'lote_id' => 'required|exists:lotes,id',
-            'arquivo_excel' => 'required|mimes:xlsx,xls,csv',
+            'arquivo_excel' => 'required|file|mimes:xlsx,xls,csv,txt',
         ]);
 
         $lote = Lote::where('id', $request->lote_id)
@@ -54,7 +76,9 @@ class ItemController extends Controller
 
         try {
             DB::beginTransaction();
+            
             Excel::import(new ItensImport($lote->id), $request->file('arquivo_excel'));
+            
             DB::commit();
 
             return redirect()->back()->with('success', 'Itens importados com sucesso!');
@@ -65,9 +89,34 @@ class ItemController extends Controller
         }
     }
     
+    public function downloadModelo()
+    {
+        $headers = [
+            "Content-type"        => "text/csv; charset=utf-8",
+            "Content-Disposition" => "attachment; filename=modelo_importacao_itens.csv",
+            "Pragma"              => "no-cache",
+            "Cache-Control"       => "must-revalidate, post-check=0, pre-check=0",
+            "Expires"             => "0"
+        ];
+
+        $callback = function() {
+            $file = fopen('php://output', 'w');
+            fprintf($file, chr(0xEF).chr(0xBB).chr(0xBF));
+            fputcsv($file, ['descricao', 'unidade', 'quantidade', 'valor_unitario'], ';');
+            fputcsv($file, ['Cimento CP II - Saco 50kg', 'SC', '100', '35.50'], ';');
+            fputcsv($file, ['Tijolo Cerâmico 8 furos', 'MIL', '5.5', '850.00'], ';');
+            fclose($file);
+        };
+
+        return response()->stream($callback, 200, $headers);
+    }
+
     public function destroy($id)
     {
-        $item = Item::where('id', $id)->firstOrFail();
+        $item = Item::where('id', $id)
+            ->whereHas('lote.contrato.prefeitura', fn($q) => $q->where('empresa_id', Auth::user()->empresa_id))
+            ->firstOrFail();
+
         $item->delete();
         return back()->with('success', 'Item removido.');
     }

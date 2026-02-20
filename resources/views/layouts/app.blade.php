@@ -12,7 +12,6 @@
     <link rel="preconnect" href="https://fonts.bunny.net">
     <link href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet" />
     
-    {{-- Mantendo o Vite padrão do Laravel 12 --}}
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -22,13 +21,18 @@
     <script src="https://unpkg.com/imask"></script>
     <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
 
-    {{-- ESTILOS ORIGINAIS MANTIDOS --}}
     <style>
-        :root {
-            --gradient-start: #115e59;
-            --gradient-end: #0f292b;
-            --primary: #2DC197;
-            --background: #f8fafc;
+        :root {            
+            --gradient-start: #234c8c; 
+            --gradient-end: #163057;   
+            
+            --primary: #184ea4;        
+            --primary-hover: #133b7a;  
+            
+            --light-blue: #84a4cd;     
+            
+            --background: #f8fafc;     
+            
             --sidebar-width: 280px;
             --border-radius: 12px;
             --border-radius-lg: 16px;
@@ -57,7 +61,7 @@
         /* --- SIDEBAR --- */
         .sidebar {
             width: var(--sidebar-width);
-            background: linear-gradient(170deg, var(--gradient-start) 0%, var(--gradient-end) 90%);
+            background: linear-gradient(180deg, var(--gradient-start) 0%, var(--gradient-end) 100%);
             color: white;
             display: flex;
             flex-direction: column;
@@ -69,6 +73,7 @@
             box-shadow: var(--shadow-lg);
             transition: var(--transition);
             overflow-y: auto;
+            border-right: 1px solid rgba(255,255,255,0.05);
         }
 
         .sidebar::-webkit-scrollbar { display: none; }
@@ -84,7 +89,8 @@
         .sidebar-logo img {
             max-width: 170px;
             height: auto;
-            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.1));
+            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));
+            border-radius: 15px;
         }
 
         /* --- NAV ITEMS --- */
@@ -95,24 +101,37 @@
             border-radius: var(--border-radius);
             margin-bottom: 0.35rem;
             transition: var(--transition);
-            color: rgba(255, 255, 255, 0.85);
+            color: rgba(255, 255, 255, 0.7);
             text-decoration: none;
             font-weight: 500;
             position: relative;
             overflow: hidden;
+            border: 1px solid transparent;
         }
 
         .nav-item:hover {
-            background: rgba(255, 255, 255, 0.15);
-            transform: translateX(3px);
+            background: rgba(255, 255, 255, 0.1);
             color: white;
+            border-color: rgba(255, 255, 255, 0.1);
         }
 
         .nav-item.active {
-            background: white !important;
-            color: #0d3532 !important;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+            background: rgba(255, 255, 255, 0.15) !important;
+            color: white !important;
             font-weight: 700;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .nav-item.active::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 10%;
+            bottom: 10%;
+            width: 4px;
+            background-color: var(--light-blue); 
+            border-radius: 0 4px 4px 0;
         }
 
         .nav-icon {
@@ -120,10 +139,15 @@
             height: 1.35rem;
             margin-right: 0.85rem;
             text-align: center;
-            filter: drop-shadow(0 1px 2px rgba(0,0,0,0.1));
+            color: #fff;
+            transition: var(--transition);
         }
 
-        .nav-item.active .nav-icon { color: var(--gradient-start); }
+        .nav-item:hover .nav-icon,
+        .nav-item.active .nav-icon { 
+            color: var(--light-blue); 
+            filter: drop-shadow(0 0 5px rgba(132, 164, 205, 0.4));
+        }
 
         .nav-section-title {
             font-size: 0.7rem;
@@ -133,75 +157,11 @@
             padding: 0 1.2rem;
             margin-top: 2rem;
             margin-bottom: 0.75rem;
-            color: rgba(255, 255, 255, 0.5);
+            color: rgba(255, 255, 255, 0.4);
         }
-
-        /* --- SUBMENU (DROPDOWN) --- */
-        .submenu {
-            padding: 0.5rem 0.5rem 0.5rem 0;
-            overflow: hidden;
-            background: rgba(0, 0, 0, 0.25);
-            border-bottom-left-radius: var(--border-radius);
-            border-bottom-right-radius: var(--border-radius);
-            margin-bottom: 0.8rem;
-            position: relative;
-        }
-
-        .submenu::before {
-            content: '';
-            position: absolute;
-            left: 1.9rem;
-            top: 0;
-            bottom: 15px;
-            width: 2px;
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 2px;
-            z-index: 1;
-        }
-
-        .submenu .nav-item {
-            font-size: 0.9rem;
-            margin-left: 1.9rem;
-            margin-right: 0.5rem;
-            margin-bottom: 0.2rem;
-            padding: 0.6rem 1rem;
-            width: auto;
-            line-height: 1.2;
-        }
-
-        .toggle-submenu {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 0.9rem 1.2rem;
-            border-radius: var(--border-radius);
-            margin-bottom: 0.35rem;
-            transition: all 0.2s ease-in-out;
-            color: rgba(255, 255, 255, 0.85);
-            cursor: pointer;
-            font-weight: 500;
-            position: relative;
-            z-index: 2;
-        }
-
-        .toggle-submenu:hover {
-            background: rgba(255, 255, 255, 0.1);
-            color: white;
-        }
-
-        .toggle-submenu.rotate {
-            background: rgba(0, 0, 0, 0.25);
-            color: white;
-            border-bottom-left-radius: 0;
-            border-bottom-right-radius: 0;
-            margin-bottom: 0;
-            box-shadow: inset 0 -1px 0 rgba(255,255,255,0.05);
-        }
-
-        .toggle-submenu.rotate i:last-child { transform: rotate(180deg); }
 
         /* --- FOOTER & CONTENT --- */
-        .sidebar-footer { padding-top: 2rem; }
+        .sidebar-footer { padding-top: 2rem; border-top: 1px solid rgba(255,255,255,0.05); }
 
         .sidebar-btn {
             display: flex;
@@ -218,19 +178,17 @@
         }
 
         .btn-logout {
-            background: rgba(255,255,255,0.95);
-            color: #0f292b;
-            border: none;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            background: #fff; 
+            color: #133b7a; 
+            border: 1px solid rgba(255, 173, 173, 0.1);
         }
-        .btn-logout:hover { transform: translateY(-2px); box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2); }
 
         .btn-profile {
             background: transparent;
             color: white;
-            border: 1px solid rgba(255, 255, 255, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.2);
         }
-        .btn-profile:hover { background: rgba(255, 255, 255, 0.1); }
+        .btn-profile:hover { background: rgba(255, 255, 255, 0.1); border-color: var(--light-blue); }
 
         .main-content {
             flex: 1;
@@ -248,8 +206,9 @@
             margin: 0 auto;
         }
 
+        /* Banner de Boas-vindas */
         .welcome-banner {
-            background: linear-gradient(120deg, var(--gradient-start) 0%, var(--primary) 100%);
+            background: linear-gradient(135deg, var(--gradient-start) 0%, var(--primary) 100%);
             color: white;
             border-radius: var(--border-radius-lg);
             padding: 2.5rem;
@@ -259,11 +218,17 @@
             justify-content: space-between;
             align-items: center;
             position: relative;
+            border: 1px solid rgba(255,255,255,0.1);
         }
 
         .welcome-text h2 { font-size: 1.8rem; margin-bottom: 0.5rem; font-weight: 700; }
-        .welcome-text p { opacity: 0.95; max-width: 600px; color: #f0fdf4; }
-        .welcome-icon { font-size: 3.5rem; opacity: 0.8; }
+        .welcome-text p { opacity: 0.9; max-width: 600px; color: #eef2ff; }
+        
+        .welcome-icon { 
+            font-size: 3.5rem; 
+            color: white; 
+            opacity: 0.15; 
+        }
 
         .mobile-menu-btn {
             display: none;
@@ -288,6 +253,10 @@
             .welcome-icon { display: none; }
         }
 
+        .bg-primary { background-color: var(--primary) !important; }
+        .text-primary { color: var(--primary) !important; }
+        .hover-primary:hover { background-color: var(--primary-hover) !important; }
+
         .fade-in { animation: fadeIn 0.5s ease-in-out; }
         .slide-in { animation: slideIn 0.4s ease-out; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
@@ -295,76 +264,47 @@
     </style>
 </head>
 
-<body x-data="{
-    sidebarOpen: false,
-    openSubmenuExample: false // Adicionei essa variável para o exemplo de submenu
-}">
+<body x-data="{ sidebarOpen: false }">
 
     <div class="app-container">
         <aside class="sidebar" id="sidebar" :class="{ 'active': sidebarOpen }">
             <div>
                 <div class="sidebar-logo">
-                    {{-- Rota genérica para dashboard --}}
+                    {{-- Logo --}}
                     <a href="{{ route('dashboard') }}">
-                        <img src="{{ asset('logo/logo_gestcloud.png') }}"
+                        <img src="{{ asset('logo/Screenshot_1.png') }}"
                              onerror="this.src='https://placehold.co/180x70?text=LOGO&bg=115e59&color=ffffff'; this.onerror=null;"
                              alt="Logo">
                     </a>
                 </div>
 
+                {{-- MENU PRINCIPAL --}}
                 <nav>
-                    {{-- DASHBOARD (Padrão Breeze) --}}
                     <a href="{{ route('dashboard') }}"
                         class="nav-item {{ request()->routeIs('dashboard') ? 'active' : '' }}">
                         <i class="nav-icon fas fa-tachometer-alt"></i>
                         <span>Dashboard</span>
                     </a>
 
-                    <div class="nav-section-title">Menu Principal</div>
+                    <div class="nav-section-title">Gestão</div>
 
-                    {{-- EXEMPLO: Link Simples --}}
-                    <a href="#" class="nav-item">
-                        <i class="fas fa-box nav-icon"></i>
-                        <span>Prefeituras</span>
+                    <a href="{{ route('empresas.index') }}"
+                        class="nav-item {{ request()->routeIs('empresas.*') ? 'active' : '' }}">
+                        <i class="fas fa-building nav-icon"></i>
+                        <span>Minha Empresa</span>
                     </a>
 
-                    {{-- EXEMPLO: Submenu (Utilizando as classes CSS que já existiam) --}}
-                    <div class="toggle-submenu" 
-                         @click="openSubmenuExample = !openSubmenuExample"
-                         :class="{ 'rotate': openSubmenuExample }">
-                        <div class="flex items-center">
-                            <i class="fas fa-layer-group nav-icon"></i>
-                            <span>Emissão de Ordens</span>
-                        </div>
-                        <i class="fas fa-chevron-down text-xs transition-transform duration-200"></i>
-                    </div>
+                    <a href="{{ route('prefeituras.index') }}"
+                        class="nav-item {{ request()->routeIs('prefeituras.*', 'contratos.*', 'lotes.*', 'itens.*') ? 'active' : '' }}">
+                        <i class="fas fa-landmark nav-icon"></i>
+                        <span>Prefeituras / Contratos</span>
+                    </a>
 
-                    {{-- Container do Submenu --}}
-                    <div class="submenu" x-show="openSubmenuExample" x-collapse>
-                        <a href="#" class="nav-item">
-                            <i class="fas fa-minus text-[10px]"></i>
-                            <span>Opção A</span>
-                        </a>
-                        <a href="#" class="nav-item">
-                            <i class="fas fa-minus text-[10px]"></i>
-                            <span>Opção B</span>
-                        </a>
-                    </div>
-                    
-                    {{-- 
-                        ÁREA COMENTADA: Lógica antiga. 
-                        Descomente e ajuste as rotas/permissões conforme for criando no Laravel 12.
-                    --}}
-                    
-                    {{-- 
-                    @if(auth()->user()->can('modulo.minha_prefeitura'))
-                        <div class="nav-section-title">Administração</div>
-                        <a href="#" class="nav-item">
-                            <i class="fas fa-building nav-icon"></i> <span>Prefeituras</span>
-                        </a>
-                    @endif 
-                    --}}
-
+                    <a href="{{ route('entregas.index') }}"
+                        class="nav-item {{ request()->routeIs('entregas.*') ? 'active' : '' }}">
+                        <i class="fas fa-truck-loading nav-icon"></i>
+                        <span>Recibos de Entrega</span>
+                    </a>
                 </nav>
             </div>
 
@@ -393,20 +333,16 @@
                     </button>
 
                     <div class="welcome-text">
-                        {{-- Usando fallback se a section não for definida na view filha --}}
-                        <h2>@yield('header', 'Painel de Controle')</h2> 
-                        <p>Bem-vindo ao sistema.</p>
+                        {{-- Título Dinâmico --}}
+                        <h2>@yield('page-title', 'Painel de Controle')</h2> 
+                        <p>@yield('page-subtitle', 'Bem-vindo ao sistema de gestão.')</p>
                     </div>
                     <div class="welcome-icon">
                         <i class="fas fa-building-circle-check"></i>
                     </div>
                 </div>
 
-                {{-- O Breeze usa $slot por padrão, mas mantive @yield para compatibilidade com seu código antigo --}}
                 @yield('content')
-                
-                {{-- Caso queira usar componentes do blade (Breeze padrão), descomente abaixo: --}}
-                {{-- {{ $slot }} --}}
             </main>
         </div>
 
@@ -420,12 +356,10 @@
     </div>
 
     <script>
-        // Fecha sidebar ao clicar fora (Mobile)
         document.addEventListener('click', (e) => {
             const sidebar = document.getElementById('sidebar');
             const menuButton = document.getElementById('menu-button');
             if (window.innerWidth < 1024 && sidebar && !sidebar.contains(e.target) && !menuButton.contains(e.target)) {
-                // Acessa o escopo do Alpine
                 const sidebarElement = document.querySelector('[x-data]');
                 if (sidebarElement && sidebarElement.__x) {
                     sidebarElement.__x.$data.sidebarOpen = false;

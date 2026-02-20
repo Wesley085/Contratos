@@ -37,7 +37,7 @@
                 </div>
 
                 {{-- LOGO ATUAL E UPLOAD --}}
-                <div class="col-span-1 md:col-span-2 border-t border-gray-100 pt-4 mt-2">
+                {{-- <div class="col-span-1 md:col-span-2 border-t border-gray-100 pt-4 mt-2">
                     <label class="block text-sm font-medium text-gray-700 mb-2">Logo</label>
                     
                     <div class="flex items-start gap-6">
@@ -61,7 +61,7 @@
                                 file:cursor-pointer hover:file:bg-[#0f292b] transition-colors">
                         </div>
                     </div>
-                </div>
+                </div> --}}
             </div>
 
             {{-- BOTÕES --}}

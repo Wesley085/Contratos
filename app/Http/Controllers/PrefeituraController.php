@@ -34,7 +34,6 @@ class PrefeituraController extends Controller
 
         $user = Auth::user();
 
-        // Trava de segurança: Se o usuário não tiver empresa, não deixa criar
         if (!$user->empresa_id) {
             return redirect()->back()
                 ->withErrors(['error' => 'Seu usuário não está vinculado a nenhuma empresa. Contate o suporte.'])

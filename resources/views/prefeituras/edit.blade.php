@@ -18,7 +18,6 @@
     <div class="bg-white shadow-sm rounded-xl overflow-hidden">
         <div class="px-6 py-4 border-b border-gray-100 bg-gray-50 flex justify-between items-center">
             <h3 class="text-lg font-bold text-gray-700">Dados Cadastrais</h3>
-            <span class="text-xs text-gray-400">ID: {{ $prefeitura->id }}</span>
         </div>
         <div class="p-6">
             <form action="{{ route('prefeituras.update', $prefeitura->id) }}" method="POST">
@@ -38,7 +37,7 @@
                     </div>
                 </div>
                 <div class="mt-4 flex justify-end">
-                    <button type="submit" class="text-sm text-[#115e59] hover:underline font-medium">Atualizar Dados da Prefeitura</button>
+                    <button type="submit" class="text-sm text-[#234c8c] hover:underline font-medium">Atualizar Dados da Prefeitura</button>
                 </div>
             </form>
         </div>
@@ -52,9 +51,11 @@
                 <p class="text-sm text-gray-500">Gerencie os contratos para este cliente.</p>
             </div>
             <button @click="showModal = true"
-                class="inline-flex items-center justify-center gap-2 px-4 py-2 text-sm font-semibold text-white bg-[#115e59] rounded-lg hover:bg-[#0d4a46] shadow-sm transition-all">
+                class="inline-flex items-center justify-center gap-2 px-4 py-2 text-sm font-semibold text-white bg-[#234c8c] rounded-lg hover:bg-[#133b7a] shadow-sm transition-all">
                 <i class="fas fa-file-signature"></i> Novo Contrato
             </button>
+            {{-- --gradient-start: #234c8c; 
+            --gradient-end: #163057; --}}
         </div>
 
         <div class="overflow-x-auto">
@@ -63,7 +64,7 @@
                     <tr>
                         <th class="px-6 py-3 text-xs font-bold text-left text-gray-500 uppercase">Nº Contrato</th>
                         <th class="px-6 py-3 text-xs font-bold text-left text-gray-500 uppercase">Objeto</th>
-                        <th class="px-6 py-3 text-xs font-bold text-left text-gray-500 uppercase">Vigência</th>
+                        <th class="px-6 py-3 text-xs font-bold text-left text-gray-500 uppercase tracking-wider"> Vigência</th>                        
                         <th class="px-6 py-3 text-xs font-bold text-center text-gray-500 uppercase">Ações</th>
                     </tr>
                 </thead>
@@ -76,17 +77,61 @@
                             <td class="px-6 py-4 text-sm text-gray-600">
                                 {{ Str::limit($contrato->objeto, 50) }}
                             </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-xs text-gray-500">
-                                @if($contrato->data_inicio)
-                                    {{ \Carbon\Carbon::parse($contrato->data_inicio)->format('d/m/Y') }} 
-                                    a 
-                                    {{ \Carbon\Carbon::parse($contrato->data_fim)->format('d/m/Y') }}
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                @if($contrato->data_inicio && $contrato->data_fim)
+                                    @php
+                                        $inicio = \Carbon\Carbon::parse($contrato->data_inicio);
+                                        $fim = \Carbon\Carbon::parse($contrato->data_fim);
+                                        $hoje = \Carbon\Carbon::now()->startOfDay();
+                                        
+                                        // Calcula dias restantes (pode ser negativo se venceu)
+                                        $diasRestantes = $hoje->diffInDays($fim, false);
+                                        
+                                        // Lógica de Status Visual
+                                        if ($diasRestantes < 0) {
+                                            // Vencido (Vermelho)
+                                            $classeBadge = 'bg-red-50 text-red-700 border-red-200';
+                                            $iconeBadge = 'fa-times-circle';
+                                            $textoBadge = 'Vencido';
+                                        } elseif ($diasRestantes <= 30) {
+                                            // Vencendo em breve (Laranja - Alerta)
+                                            $classeBadge = 'bg-orange-50 text-orange-700 border-orange-200';
+                                            $iconeBadge = 'fa-exclamation-triangle';
+                                            $textoBadge = 'Vence em ' . intval($diasRestantes) . ' dias';
+                                        } else {
+                                            // Vigente (Verde/Azul)
+                                            $classeBadge = 'bg-emerald-50 text-emerald-700 border-emerald-200';
+                                            $iconeBadge = 'fa-check-circle';
+                                            $textoBadge = 'Vigente';
+                                        }
+                                    @endphp
+
+                                    <div class="flex flex-col gap-1.5">
+                                        {{-- Datas Empilhadas --}}
+                                        <div class="text-xs">
+                                            <div class="flex items-center text-gray-500 mb-0.5" title="Início da Vigência">
+                                                <i class="fas fa-play text-[8px] w-4 text-gray-300"></i>
+                                                {{ $inicio->format('d/m/Y') }}
+                                            </div>
+                                            <div class="flex items-center text-gray-700 font-bold" title="Fim da Vigência">
+                                                <i class="fas fa-flag-checkered text-[8px] w-4 text-gray-300"></i>
+                                                {{ $fim->format('d/m/Y') }}
+                                            </div>
+                                        </div>
+
+                                        {{-- Badge de Status --}}
+                                        <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-medium border w-fit {{ $classeBadge }}">
+                                            <i class="fas {{ $iconeBadge }} mr-1.5"></i> {{ $textoBadge }}
+                                        </span>
+                                    </div>
                                 @else
-                                    -
+                                    <div class="text-xs text-gray-400 italic flex items-center">
+                                        <i class="fas fa-minus-circle mr-1.5 opacity-50"></i> Indefinido
+                                    </div>
                                 @endif
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-center text-sm font-medium">
-                                <a href="{{ route('contratos.edit', $contrato->id) }}" class="text-[#115e59] hover:text-[#0d4a46] mr-3 font-bold">
+                                <a href="{{ route('contratos.edit', $contrato->id) }}" class="text-[#234c8c] hover:text-[#133b7a] mr-3 font-bold">
                                     <i class="fas fa-box-open mr-1"></i> Gerenciar Lotes
                                 </a>
                             </td>

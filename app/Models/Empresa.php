@@ -21,5 +21,10 @@ class Empresa extends Model
     {
         return $this->hasMany(User::class);
     }
+
+    public function contratos()
+    {
+        return $this->hasManyThrough(Contrato::class, Prefeitura::class);
+    }
     
 }

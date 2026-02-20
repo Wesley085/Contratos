@@ -96,28 +96,51 @@
         </div>
 
         @forelse($contrato->lotes as $lote)
-            <div class="bg-white border border-gray-200 shadow-sm rounded-xl overflow-hidden mb-6" x-data="{ showImport: false }">
+            <div class="bg-white border border-gray-200 shadow-sm rounded-xl overflow-hidden mb-6 transition-all hover:shadow-md" x-data="{ showImport: false }">
                 
                 {{-- Cabeçalho do Lote --}}
-                <div class="bg-gray-50 px-6 py-3 border-b border-gray-200 flex flex-col md:flex-row justify-between md:items-center gap-3">
+                <div class="bg-white px-6 py-4 border-b border-gray-100 flex flex-col md:flex-row justify-between md:items-center gap-4">
+                    
+                    {{-- Título --}}
                     <div class="flex items-center gap-3">
-                        <div class="bg-white p-2 rounded-md border border-gray-200 shadow-sm">
-                            <i class="fas fa-box text-[#115e59]"></i>
+                        <div class="h-10 w-10 rounded-lg bg-gray-50 border border-gray-100 flex items-center justify-center text-[#184ea4]">
+                            <i class="fas fa-layer-group text-lg"></i>
                         </div>
-                        <h4 class="font-bold text-gray-700 text-lg">{{ $lote->nome }}</h4>
-                        <span class="text-xs text-gray-500 bg-gray-200 px-2 py-1 rounded-full">{{ $lote->itens->count() }} itens</span>
+                        <div>
+                            <div class="flex items-center gap-2">
+                                <h4 class="font-bold text-gray-800 text-lg">{{ $lote->nome }}</h4>
+                                <button onclick="openModalEditarLote({{ $lote->id }}, '{{ $lote->nome }}')" class="text-gray-400 hover:text-[#184ea4] transition-colors" title="Editar Nome">
+                                    <i class="fas fa-pen text-xs"></i>
+                                </button>
+                            </div>
+                            <span class="text-xs font-medium text-gray-500 bg-gray-100 px-2 py-0.5 rounded-full border border-gray-200">
+                                {{ $lote->itens->count() }} itens cadastrados
+                            </span>
+                        </div>
                     </div>
 
-                    <div class="flex gap-2">
-                        {{-- Botão Importar Excel --}}
-                        <button @click="showImport = !showImport" 
-                            class="text-sm px-3 py-1.5 bg-green-600 text-white rounded hover:bg-green-700 transition-colors flex items-center gap-2">
-                            <i class="fas fa-file-excel"></i> Importar Itens
+                    {{-- Botões de Ação --}}
+                    <div class="flex flex-wrap items-center gap-2">
+                        
+                        {{-- Botão Importar (Estilo Ghost Verde) --}}
+                        <button
+                            @click="showImport = !showImport"
+                            :class="showImport 
+                                ? 'bg-green-50 border-green-200 text-green-700' 
+                                : 'bg-white border-green-600 text-green-600 hover:bg-green-600 hover:text-white'"
+                            class="group px-4 py-2 text-sm font-semibold border rounded-lg transition-all flex items-center gap-2 shadow-sm">
+
+                            <i class="fas fa-file-excel"
+                            :class="showImport ? '' : 'text-green-600 group-hover:text-white'">
+                            </i>
+
+                            <span x-text="showImport ? 'Fechar Importação' : 'Importar Excel'"></span>
                         </button>
 
-                        {{-- Botão Novo Item Manual --}}
+
+                        {{-- Botão Novo Item) --}}
                         <button onclick="openModalItem({{ $lote->id }}, '{{ $lote->nome }}')"
-                            class="text-sm px-3 py-1.5 bg-white border border-gray-300 text-gray-700 rounded hover:bg-gray-50 transition-colors flex items-center gap-2">
+                            class="px-4 py-2 text-sm font-semibold text-white bg-[#184ea4] border border-[#184ea4] rounded-lg hover:bg-[#133b7a] transition-all flex items-center gap-2 shadow-md hover:shadow-lg hover:-translate-y-0.5">
                             <i class="fas fa-plus"></i> Novo Item
                         </button>
                         
@@ -125,8 +148,8 @@
                         @if($lote->itens->count() == 0)
                         <form action="{{ route('lotes.destroy', $lote->id) }}" method="POST" onsubmit="return confirm('Excluir este lote?')">
                             @csrf @method('DELETE')
-                            <button type="submit" class="text-sm px-3 py-1.5 text-red-500 hover:bg-red-50 rounded transition-colors" title="Excluir Lote Vazio">
-                                <i class="fas fa-trash"></i>
+                            <button type="submit" class="h-10 w-10 flex items-center justify-center text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors" title="Excluir Lote Vazio">
+                                <i class="fas fa-trash-alt"></i>
                             </button>
                         </form>
                         @endif
@@ -134,57 +157,103 @@
                 </div>
 
                 {{-- Área de Importação --}}
-                <div x-show="showImport" class="bg-green-50 p-4 border-b border-green-100" style="display: none;">
-                    <form action="{{ route('itens.import') }}" method="POST" enctype="multipart/form-data" class="flex items-end gap-4">
-                        @csrf
-                        <input type="hidden" name="lote_id" value="{{ $lote->id }}">
-                        <div class="flex-1">
-                            <label class="block text-xs font-bold text-green-800 mb-1">Selecione a Planilha (.xlsx, .csv)</label>
-                            <input type="file" name="arquivo_excel" required accept=".xlsx,.xls,.csv" 
-                                class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-green-600 file:text-white hover:file:bg-green-700">
+                <div x-show="showImport" x-collapse style="display: none;">
+                    <div class="bg-gray-50 p-6 border-b border-gray-200 shadow-inner">
+                        <div class="flex flex-col md:flex-row gap-8">
+                            
+                            {{-- Lado Esquerdo: Instruções e Modelo --}}
+                            <div class="md:w-1/3 space-y-4">
+                                <div>
+                                    <h5 class="font-bold text-gray-700 mb-1">1. Baixe o Modelo</h5>
+                                    <p class="text-xs text-gray-500 mb-3">Use nossa planilha padrão para evitar erros.</p>
+                                    <a href="{{ route('itens.modelo') }}" class="inline-flex items-center gap-2 px-4 py-2 bg-white border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:border-[#f1974e] hover:text-[#f1974e] transition-colors shadow-sm">
+                                        <i class="fas fa-download text-[#f1974e]"></i> Baixar Planilha Modelo
+                                    </a>
+                                </div>
+                                
+                                <div class="text-xs text-gray-500 bg-blue-50 p-3 rounded border border-blue-100">
+                                    <strong>Atenção:</strong> As colunas obrigatórias são: <br>
+                                    <code class="text-blue-700">descricao</code>, <code class="text-blue-700">unidade</code>, <code class="text-blue-700">quantidade</code>, <code class="text-blue-700">valor_unitario</code>.
+                                </div>
+                            </div>
+
+                            {{-- Lado Direito: Upload --}}
+                            <div class="md:w-2/3">
+                                <h5 class="font-bold text-gray-700 mb-2">2. Envie o Arquivo</h5>
+                                <form action="{{ route('itens.import') }}" method="POST" enctype="multipart/form-data">
+                                    @csrf
+                                    <input type="hidden" name="lote_id" value="{{ $lote->id }}">
+                                    
+                                    <div class="flex items-start gap-4">
+                                        <div class="flex-1">
+                                            <input type="file" name="arquivo_excel" required accept=".xlsx,.xls,.csv" 
+                                                class="block w-full text-sm text-gray-500
+                                                file:mr-4 file:py-2.5 file:px-4
+                                                file:rounded-lg file:border-0
+                                                file:text-sm file:font-semibold
+                                                file:bg-[#184ea4] file:text-white
+                                                hover:file:bg-[#133b7a]
+                                                cursor-pointer border border-gray-300 rounded-lg bg-white">
+                                        </div>
+                                        <button type="submit" class="px-6 py-2.5 bg-green-600 text-white font-bold rounded-lg shadow hover:bg-green-700 transition-all">
+                                            <i class="fas fa-cloud-upload-alt mr-2"></i> Enviar
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
+
                         </div>
-                        <button type="submit" class="px-4 py-2 bg-green-700 text-white text-sm font-bold rounded hover:bg-green-800">
-                            Processar Importação
-                        </button>
-                        <a href="#" class="text-xs text-green-700 underline self-center ml-2">Baixar Modelo</a>
-                    </form>
+                    </div>
                 </div>
 
                 {{-- Tabela de Itens --}}
                 <div class="overflow-x-auto">
                     <table class="min-w-full divide-y divide-gray-200">
-                        <thead class="bg-white">
+                        <thead class="bg-gray-50">
                             <tr>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-16">Item</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Descrição</th>
-                                <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider w-20">Und</th>
-                                <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Qtd</th>
-                                <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">V. Unit.</th>
-                                <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Total</th>
-                                <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider w-16">Ações</th>
+                                <th class="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider w-16">Item</th>
+                                <th class="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Descrição</th>
+                                <th class="px-6 py-3 text-center text-xs font-bold text-gray-500 uppercase tracking-wider w-20">Und</th>
+                                <th class="px-6 py-3 text-right text-xs font-bold text-gray-500 uppercase tracking-wider">Qtd</th>
+                                <th class="px-6 py-3 text-right text-xs font-bold text-gray-500 uppercase tracking-wider">V. Unit.</th>
+                                <th class="px-6 py-3 text-right text-xs font-bold text-gray-500 uppercase tracking-wider">Total</th>
+                                <th class="px-6 py-3 text-center text-xs font-bold text-gray-500 uppercase tracking-wider w-24">Ações</th>
                             </tr>
                         </thead>
                         <tbody class="bg-white divide-y divide-gray-200">
                             @forelse($lote->itens as $item)
-                                <tr class="hover:bg-gray-50">
-                                    <td class="px-6 py-3 whitespace-nowrap text-sm text-gray-500 text-center">{{ $item->numero_item ?? $loop->iteration }}</td>
+                                <tr class="hover:bg-blue-50/50 group transition-colors">
+                                    <td class="px-6 py-3 text-sm text-gray-400 text-center font-mono">{{ $loop->iteration }}</td>
                                     <td class="px-6 py-3 text-sm text-gray-900 font-medium">{{ Str::limit($item->descricao, 60) }}</td>
-                                    <td class="px-6 py-3 whitespace-nowrap text-sm text-gray-500 text-center">{{ $item->unidade }}</td>
-                                    <td class="px-6 py-3 whitespace-nowrap text-sm text-gray-500 text-right">{{ number_format($item->quantidade, 2, ',', '.') }}</td>
-                                    <td class="px-6 py-3 whitespace-nowrap text-sm text-gray-500 text-right">R$ {{ number_format($item->valor_unitario, 2, ',', '.') }}</td>
-                                    <td class="px-6 py-3 whitespace-nowrap text-sm text-gray-900 font-bold text-right">R$ {{ number_format($item->valor_total, 2, ',', '.') }}</td>
-                                    <td class="px-6 py-3 whitespace-nowrap text-right text-sm font-medium">
-                                        <form action="{{ route('itens.destroy', $item->id) }}" method="POST" class="inline" onsubmit="return confirm('Remover este item?')">
-                                            @csrf @method('DELETE')
-                                            <button type="submit" class="text-red-400 hover:text-red-600"><i class="fas fa-times"></i></button>
-                                        </form>
+                                    <td class="px-6 py-3 whitespace-nowrap text-sm text-gray-500 text-center bg-gray-50/50 font-medium">{{ $item->unidade }}</td>
+                                    <td class="px-6 py-3 whitespace-nowrap text-sm text-gray-700 text-right">{{ number_format($item->quantidade, 2, ',', '.') }}</td>
+                                    <td class="px-6 py-3 whitespace-nowrap text-sm text-gray-700 text-right">R$ {{ number_format($item->valor_unitario, 2, ',', '.') }}</td>
+                                    <td class="px-6 py-3 whitespace-nowrap text-sm text-[#184ea4] font-bold text-right">R$ {{ number_format($item->valor_total, 2, ',', '.') }}</td>
+                                    <td class="px-6 py-3 whitespace-nowrap text-center text-sm font-medium">
+                                        <div class="flex items-center justify-center gap-3 opacity-60 group-hover:opacity-100 transition-opacity">
+                                            {{-- Botão Editar Item --}}
+                                            <button onclick="openModalEditarItem({{ $item->id }}, '{{ addslashes($item->descricao) }}', '{{ $item->unidade }}', {{ $item->quantidade }}, {{ $item->valor_unitario }})" 
+                                                class="text-blue-400 hover:text-blue-600 transition-colors" title="Editar Item">
+                                                <i class="fas fa-edit"></i>
+                                            </button>
+
+                                            <form action="{{ route('itens.destroy', $item->id) }}" method="POST" class="inline" onsubmit="return confirm('Remover este item?')">
+                                                @csrf @method('DELETE')
+                                                <button type="submit" class="text-red-400 hover:text-red-600 transition-colors" title="Excluir Item">
+                                                    <i class="fas fa-trash-alt"></i>
+                                                </button>
+                                            </form>
+                                        </div>
                                     </td>
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="7" class="px-6 py-8 text-center text-gray-500 text-sm bg-gray-50">
-                                        Nenhum item cadastrado neste lote. 
-                                        <br>Use o botão "Importar" ou "Novo Item".
+                                    <td colspan="7" class="px-6 py-12 text-center">
+                                        <div class="flex flex-col items-center justify-center text-gray-400">
+                                            <i class="fas fa-clipboard-list text-3xl mb-3 opacity-20"></i>
+                                            <p class="font-medium">Este lote está vazio.</p>
+                                            <p class="text-xs mt-1">Clique em "Novo Item" ou "Importar Excel" para começar.</p>
+                                        </div>
                                     </td>
                                 </tr>
                             @endforelse
@@ -193,20 +262,13 @@
                 </div>
             </div>
         @empty
-            <div class="text-center py-12 bg-white rounded-xl border-2 border-dashed border-gray-300">
-                <i class="fas fa-box-open text-4xl text-gray-300 mb-3"></i>
-                <p class="text-gray-500 font-medium">Nenhum lote criado para este contrato.</p>
-                <p class="text-sm text-gray-400 mb-4">Crie um lote para começar a adicionar itens.</p>
-                <button onclick="document.getElementById('modalNovoLote').showModal()" class="text-[#115e59] hover:underline font-bold">
-                    Criar Primeiro Lote
-                </button>
-            </div>
+            <div class="text-center py-12 bg-white rounded-xl border-2 border-dashed border-gray-300"></div>
         @endforelse
     </div>
 </div>
 
 {{-- MODAL NOVO LOTE --}}
-<dialog id="modalNovoLote" class="rounded-lg shadow-xl p-0 w-full max-w-md backdrop:bg-gray-900/50">
+<dialog id="modalNovoLote" class="m-auto rounded-lg shadow-xl p-0 w-full max-w-md backdrop:bg-gray-900/50 backdrop:backdrop-blur-sm">
     <div class="bg-white">
         <div class="px-6 py-4 border-b border-gray-100 flex justify-between items-center">
             <h3 class="text-lg font-bold text-gray-700">Novo Lote</h3>
@@ -230,8 +292,32 @@
     </div>
 </dialog>
 
+{{-- MODAL EDITAR LOTE --}}
+<dialog id="modalEditarLote" class="m-auto rounded-lg shadow-xl p-0 w-full max-w-md backdrop:bg-gray-900/50 backdrop:backdrop-blur-sm">
+    <div class="bg-white">
+        <div class="px-6 py-4 border-b border-gray-100 flex justify-between items-center">
+            <h3 class="text-lg font-bold text-gray-700">Editar Lote</h3>
+            <button onclick="document.getElementById('modalEditarLote').close()" class="text-gray-400 hover:text-gray-600"><i class="fas fa-times"></i></button>
+        </div>
+        <form id="formEditarLote" method="POST" class="p-6">
+            @csrf @method('PUT')
+            
+            <div class="mb-4">
+                <label class="block text-sm font-medium text-gray-700 mb-1">Nome do Lote</label>
+                <input type="text" name="nome" id="edit_lote_nome" required 
+                    class="block w-full border-gray-300 rounded-md shadow-sm focus:ring-[#115e59] focus:border-[#115e59]">
+            </div>
+
+            <div class="flex justify-end gap-3 mt-6">
+                <button type="button" onclick="document.getElementById('modalEditarLote').close()" class="px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-lg">Cancelar</button>
+                <button type="submit" class="px-4 py-2 text-sm text-white bg-blue-600 hover:bg-blue-700 rounded-lg shadow">Atualizar</button>
+            </div>
+        </form>
+    </div>
+</dialog>
+
 {{-- MODAL NOVO ITEM --}}
-<dialog id="modalNovoItem" class="rounded-lg shadow-xl p-0 w-full max-w-2xl backdrop:bg-gray-900/50">
+<dialog id="modalNovoItem" class="m-auto rounded-lg shadow-xl p-0 w-full max-w-2xl backdrop:bg-gray-900/50 backdrop:backdrop-blur-sm">
     <div class="bg-white">
         <div class="px-6 py-4 border-b border-gray-100 flex justify-between items-center">
             <h3 class="text-lg font-bold text-gray-700">Adicionar Item ao <span id="spanNomeLote" class="text-[#115e59]"></span></h3>
@@ -241,39 +327,28 @@
             @csrf
             <input type="hidden" name="lote_id" id="inputLoteId">
             
-            <div class="grid grid-cols-1 md:grid-cols-12 gap-4">
-                {{-- N Item --}}
-                <div class="md:col-span-2">
-                    <label class="block text-xs font-bold text-gray-700 uppercase">Nº Item</label>
-                    <input type="number" name="numero_item" class="w-full border-gray-300 rounded focus:ring-[#115e59] focus:border-[#115e59]">
-                </div>
-                
-                {{-- Descrição --}}
-                <div class="md:col-span-10">
+            <div class="grid grid-cols-1 md:grid-cols-12 gap-4">                
+                <div class="md:col-span-12">
                     <label class="block text-xs font-bold text-gray-700 uppercase">Descrição *</label>
                     <input type="text" name="descricao" required class="w-full border-gray-300 rounded focus:ring-[#115e59] focus:border-[#115e59]">
                 </div>
 
-                {{-- Unidade --}}
                 <div class="md:col-span-2">
                     <label class="block text-xs font-bold text-gray-700 uppercase">UND *</label>
                     <input type="text" name="unidade" required placeholder="UN" class="w-full border-gray-300 rounded focus:ring-[#115e59] focus:border-[#115e59]">
                 </div>
 
-                {{-- Quantidade --}}
-                <div class="md:col-span-3">
+                <div class="md:col-span-5">
                     <label class="block text-xs font-bold text-gray-700 uppercase">Quantidade *</label>
-                    <input type="number" step="0.0001" name="quantidade" id="qtd" required oninput="calcularTotal()" class="w-full border-gray-300 rounded focus:ring-[#115e59] focus:border-[#115e59]">
+                    <input type="number" step="0.0001" name="quantidade" id="qtd" required oninput="calcularTotal('qtd', 'vlr', 'total')" class="w-full border-gray-300 rounded focus:ring-[#115e59] focus:border-[#115e59]">
                 </div>
 
-                {{-- Valor Unit --}}
-                <div class="md:col-span-3">
+                <div class="md:col-span-5">
                     <label class="block text-xs font-bold text-gray-700 uppercase">Valor Unit. *</label>
-                    <input type="number" step="0.01" name="valor_unitario" id="vlr" required oninput="calcularTotal()" class="w-full border-gray-300 rounded focus:ring-[#115e59] focus:border-[#115e59]">
+                    <input type="number" step="0.01" name="valor_unitario" id="vlr" required oninput="calcularTotal('qtd', 'vlr', 'total')" class="w-full border-gray-300 rounded focus:ring-[#115e59] focus:border-[#115e59]">
                 </div>
 
-                {{-- Total --}}
-                <div class="md:col-span-4">
+                <div class="md:col-span-12">
                     <label class="block text-xs font-bold text-gray-700 uppercase">Total Estimado</label>
                     <input type="text" id="total" readonly class="w-full bg-gray-100 border-gray-300 rounded text-gray-500 font-bold">
                 </div>
@@ -282,6 +357,51 @@
             <div class="flex justify-end gap-3 mt-6 border-t pt-4">
                 <button type="button" onclick="document.getElementById('modalNovoItem').close()" class="px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-lg">Cancelar</button>
                 <button type="submit" class="px-4 py-2 text-sm text-white bg-[#115e59] hover:bg-[#0d4a46] rounded-lg shadow">Salvar Item</button>
+            </div>
+        </form>
+    </div>
+</dialog>
+
+{{-- MODAL EDITAR ITEM --}}
+<dialog id="modalEditarItem" class="m-auto rounded-lg shadow-xl p-0 w-full max-w-2xl backdrop:bg-gray-900/50 backdrop:backdrop-blur-sm">
+    <div class="bg-white">
+        <div class="px-6 py-4 border-b border-gray-100 flex justify-between items-center">
+            <h3 class="text-lg font-bold text-gray-700">Editar Item</h3>
+            <button onclick="document.getElementById('modalEditarItem').close()" class="text-gray-400 hover:text-gray-600"><i class="fas fa-times"></i></button>
+        </div>
+        <form id="formEditarItem" method="POST" class="p-6">
+            @csrf @method('PUT')
+            
+            <div class="grid grid-cols-1 md:grid-cols-12 gap-4">                
+                <div class="md:col-span-12">
+                    <label class="block text-xs font-bold text-gray-700 uppercase">Descrição *</label>
+                    <input type="text" name="descricao" id="edit_descricao" required class="w-full border-gray-300 rounded focus:ring-blue-500 focus:border-blue-500">
+                </div>
+
+                <div class="md:col-span-2">
+                    <label class="block text-xs font-bold text-gray-700 uppercase">UND *</label>
+                    <input type="text" name="unidade" id="edit_unidade" required class="w-full border-gray-300 rounded focus:ring-blue-500 focus:border-blue-500">
+                </div>
+
+                <div class="md:col-span-5">
+                    <label class="block text-xs font-bold text-gray-700 uppercase">Quantidade *</label>
+                    <input type="number" step="0.0001" name="quantidade" id="edit_qtd" required oninput="calcularTotal('edit_qtd', 'edit_vlr', 'edit_total')" class="w-full border-gray-300 rounded focus:ring-blue-500 focus:border-blue-500">
+                </div>
+
+                <div class="md:col-span-5">
+                    <label class="block text-xs font-bold text-gray-700 uppercase">Valor Unit. *</label>
+                    <input type="number" step="0.01" name="valor_unitario" id="edit_vlr" required oninput="calcularTotal('edit_qtd', 'edit_vlr', 'edit_total')" class="w-full border-gray-300 rounded focus:ring-blue-500 focus:border-blue-500">
+                </div>
+
+                <div class="md:col-span-12">
+                    <label class="block text-xs font-bold text-gray-700 uppercase">Total Estimado</label>
+                    <input type="text" id="edit_total" readonly class="w-full bg-gray-100 border-gray-300 rounded text-gray-500 font-bold">
+                </div>
+            </div>
+
+            <div class="flex justify-end gap-3 mt-6 border-t pt-4">
+                <button type="button" onclick="document.getElementById('modalEditarItem').close()" class="px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-lg">Cancelar</button>
+                <button type="submit" class="px-4 py-2 text-sm text-white bg-blue-600 hover:bg-blue-700 rounded-lg shadow">Atualizar Item</button>
             </div>
         </form>
     </div>
@@ -302,12 +422,39 @@
         document.getElementById('modalNovoItem').showModal();
     }
 
-    function calcularTotal() {
-        const qtd = parseFloat(document.getElementById('qtd').value) || 0;
-        const vlr = parseFloat(document.getElementById('vlr').value) || 0;
+    function openModalEditarLote(id, nomeAtual) {
+        const modal = document.getElementById('modalEditarLote');
+        const form = document.getElementById('formEditarLote');
+        const inputNome = document.getElementById('edit_lote_nome');
+
+        form.action = "{{ url('lotes') }}/" + id;
+        inputNome.value = nomeAtual;
+
+        modal.showModal();
+    }
+
+    function openModalEditarItem(id, descricao, unidade, qtd, vlr) {
+        const modal = document.getElementById('modalEditarItem');
+        const form = document.getElementById('formEditarItem');
+        
+        form.action = "{{ url('itens') }}/" + id;
+
+        document.getElementById('edit_descricao').value = descricao;
+        document.getElementById('edit_unidade').value = unidade;
+        document.getElementById('edit_qtd').value = qtd;
+        document.getElementById('edit_vlr').value = vlr;
+
+        calcularTotal('edit_qtd', 'edit_vlr', 'edit_total');
+
+        modal.showModal();
+    }
+
+    function calcularTotal(idQtd, idVlr, idTotal) {
+        const qtd = parseFloat(document.getElementById(idQtd).value) || 0;
+        const vlr = parseFloat(document.getElementById(idVlr).value) || 0;
         const total = qtd * vlr;
         
-        document.getElementById('total').value = total.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+        document.getElementById(idTotal).value = total.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
     }
 </script>
 @endpush

@@ -25,8 +25,27 @@ class LoteController extends Controller
         Lote::create($validated);
 
         return redirect()
-            ->route('contratos.edit', $contrato->id) 
+            ->back() 
             ->with('success', 'Lote criado com sucesso.');
+    }
+
+    public function update(Request $request, $id)
+    {
+        $validated = $request->validate([
+            'nome' => 'required|string|max:255',
+        ]);
+
+        $lote = Lote::where('id', $id)
+            ->whereHas('contrato.prefeitura', function($q) {
+                $q->where('empresa_id', Auth::user()->empresa_id);
+            })
+            ->firstOrFail();
+
+        $lote->update($validated);
+
+        return redirect()
+            ->back()
+            ->with('success', 'Nome do lote atualizado.');
     }
     
     public function destroy($id)
@@ -37,11 +56,10 @@ class LoteController extends Controller
             })
             ->firstOrFail();
             
-         $contratoId = $lote->contrato_id;
          $lote->delete(); 
          
          return redirect()
-            ->route('contratos.edit', $contratoId)
+            ->back()
             ->with('success', 'Lote removido.');
     }
 }

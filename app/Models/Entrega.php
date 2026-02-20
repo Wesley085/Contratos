@@ -15,6 +15,12 @@ class Entrega extends Model
         'data_entrega' => 'date',
     ];
 
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
+
+
     public function contrato()
     {
         return $this->belongsTo(Contrato::class);

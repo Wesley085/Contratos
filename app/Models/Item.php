@@ -11,7 +11,7 @@ class Item extends Model
     
     protected $table = 'itens'; 
 
-    protected $fillable = ['lote_id', 'numero_item', 'descricao', 'unidade', 'quantidade', 'valor_unitario', 'valor_total'];
+    protected $fillable = ['lote_id', 'descricao', 'unidade', 'quantidade', 'valor_unitario', 'valor_total'];
 
     public function lote()
     {

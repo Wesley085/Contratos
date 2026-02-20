@@ -18,7 +18,7 @@
                     <label for="nome" class="block text-sm font-medium text-gray-700">Nome da Prefeitura <span class="text-red-500">*</span></label>
                     <input type="text" name="nome" id="nome" value="{{ old('nome') }}" required
                         class="block w-full mt-1 border-gray-300 rounded-md shadow-sm focus:ring-[#115e59] focus:border-[#115e59]"
-                        placeholder="Ex: Prefeitura Municipal de Pacajus">
+                        placeholder="Ex: Prefeitura Municipal de Currais">
                 </div>
 
                 <div>

@@ -29,11 +29,11 @@
         </div>
 
         {{-- Botão de Criar --}}
-        <a href="{{ route('empresas.create') }}"
+        {{-- <a href="{{ route('empresas.create') }}"
             class="inline-flex items-center justify-center gap-2 px-5 py-2.5 text-sm font-semibold text-white transition-all duration-200 bg-[#062F43] rounded-lg hover:bg-[#084d6e] hover:shadow-lg hover:-translate-y-0.5">
             <i class="fas fa-plus"></i>
             Nova Empresa
-        </a>
+        </a> --}}
     </div>
 
     {{-- TABELA --}}
